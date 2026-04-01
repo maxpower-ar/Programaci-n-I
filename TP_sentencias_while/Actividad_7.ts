@@ -1,12 +1,12 @@
 let num = 65;
-if (num<10)
-    console.log("El numero es muy chico")
-else if (num>99)
-    console.log("El numero es muy grande")
+let suma = 0;
 
-//Unidades
-console.log(num%10);
-//Decenas
-console.log(Math.floor(num/10));
-//Resultado
-console.log(num%10 + Math.floor(num/10));
+while (num > 1) {
+
+    let digito = Math.floor(num%10)
+    suma = suma + digito;
+    
+    num = num/10;
+}
+
+console.log(suma);
