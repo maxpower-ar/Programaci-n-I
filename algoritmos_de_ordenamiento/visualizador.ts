@@ -12,6 +12,8 @@ type ModoAlgoritmo = ClaveAlgoritmo | "duelo";
 
 // Valores recomendados para la presentación
 const N_RECOMENDADO = 100;
+const N_MIN = 2;
+const N_MAX = 500;
 const VELOCIDAD_RECOMENDADA = 53; // ~190 operaciones por segundo
 type EstadoCorredor = "listo" | "corriendo" | "pausado" | "terminado";
 type Color = "barra" | "cmp" | "swap" | "pivote" | "listo" | "rango";
@@ -473,7 +475,7 @@ function actualizarNota(): void {
   const n = estado.n;
   const final = n <= 7 ? "Con tan pocos debería terminar enseguida."
     : n <= 9 ? "Puede tardar bastante: paciencia (o subí la velocidad)."
-    : "No va a terminar nunca. Para verlo ordenar, bajá a 5 o 6 elementos.";
+    : "No va a terminar nunca. Para verlo ordenar, tocá el número de Elementos y escribí 5 o 6.";
   nota.innerHTML = `Con <b>${n}</b> elementos hay <b>${factorialAproximado(n)}</b> órdenes posibles y sólo uno es el correcto. ${final}`;
 }
 
@@ -548,6 +550,20 @@ function elegirAlgoritmo(alg: ModoAlgoritmo): void {
 function pintarSlider(input: HTMLInputElement): void {
   const p = ((+input.value - +input.min) / (+input.max - +input.min)) * 100;
   input.style.setProperty("--p", p + "%");
+}
+
+// Cambia la cantidad de elementos y sincroniza el slider con el campo de texto.
+// `tocarCampo` en false cuando el valor viene del propio campo (para no
+// pisar lo que la persona está escribiendo).
+function cambiarCantidad(n: number, tocarCampo: boolean = true, regenerar: boolean = true): void {
+  estado.n = Math.max(N_MIN, Math.min(N_MAX, Math.round(n)));
+  const rngN = $<HTMLInputElement>("#rngN");
+  rngN.value = String(estado.n);
+  pintarSlider(rngN);
+  if (tocarCampo) $<HTMLInputElement>("#numN").value = String(estado.n);
+  marcarRecomendado("#outN", estado.n === N_RECOMENDADO);
+  actualizarNota();
+  if (regenerar) reiniciar(true);
 }
 
 function cambiarVelocidad(v: number): void {
@@ -691,15 +707,18 @@ function conectar(): void {
     })
   );
 
+  // Cantidad de elementos: con el slider (de 2 en 2) o escribiéndola a mano
   const rngN = $<HTMLInputElement>("#rngN");
-  rngN.addEventListener("input", () => {
-    estado.n = +rngN.value;
-    $("#outN").textContent = String(estado.n);
-    marcarRecomendado("#outN", estado.n === N_RECOMENDADO);
-    actualizarNota();
-    pintarSlider(rngN);
-    reiniciar(true);
+  const numN = $<HTMLInputElement>("#numN");
+  rngN.addEventListener("input", () => cambiarCantidad(+rngN.value));
+  numN.addEventListener("input", () => {
+    const n = Math.round(+numN.value);
+    if (numN.value !== "" && n >= N_MIN && n <= N_MAX) cambiarCantidad(n, false);
   });
+  // Al salir del campo (o con Enter) se corrige lo que esté fuera de rango
+  numN.addEventListener("change", () => cambiarCantidad(+numN.value || N_RECOMENDADO));
+  numN.addEventListener("keydown", (e) => { if (e.key === "Enter") numN.blur(); });
+  numN.addEventListener("focus", () => numN.select());
 
   const rngV = $<HTMLInputElement>("#rngV");
   rngV.addEventListener("input", () => cambiarVelocidad(+rngV.value));
@@ -723,6 +742,8 @@ function conectar(): void {
     const enFoco = document.activeElement as HTMLElement | null;
     const enSlider = enFoco instanceof HTMLInputElement && enFoco.type === "range";
     const enBoton = enFoco instanceof HTMLButtonElement;
+    // Mientras se escribe un número, los atajos no se disparan
+    if (enFoco instanceof HTMLInputElement && enFoco.type === "number") return;
     switch (e.key) {
       case " ":
         if (enBoton) return;
@@ -756,11 +777,7 @@ function conectar(): void {
   aplicarTema(tema);
 
   conectar();
-  const rngN = $<HTMLInputElement>("#rngN");
-  rngN.value = String(estado.n);
-  $("#outN").textContent = String(estado.n);
-  marcarRecomendado("#outN", true);
-  pintarSlider(rngN);
+  cambiarCantidad(estado.n, true, false);
   cambiarVelocidad(estado.velocidad);
   actualizarTextos();
   animarPalabra("Quick");

@@ -314,11 +314,34 @@ kbd {
   justify-content: space-between;
   gap: 10px;
 }
-.etiqueta output.recomendado::after {
+.etiqueta .recomendado::after {
   content: " · recomendado";
   color: var(--c-listo);
   font-weight: 400;
+  text-transform: none;
+  letter-spacing: .04em;
 }
+.etiqueta .valor { display: inline-flex; align-items: baseline; }
+
+/* Campo para escribir la cantidad a mano */
+#numN {
+  width: 5ch;
+  padding: 1px 2px 1px 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed var(--apagado);
+  color: var(--tinta);
+  font: 600 13px "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+#numN::-webkit-inner-spin-button,
+#numN::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+#numN:hover { border-bottom-color: var(--tinta); }
+#numN:focus { outline: none; border-bottom: 1px solid var(--acento); background: var(--fondo-3); }
+
 .etiqueta output {
   color: var(--tinta);
   font-weight: 600;

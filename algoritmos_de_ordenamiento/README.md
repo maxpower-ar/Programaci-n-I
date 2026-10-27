@@ -7,7 +7,7 @@ Demo visual para Programación I (ITR). Cada valor del arreglo es una barra; su 
 ## Qué se puede hacer
 
 - Elegir **Quick Sort**, **Random Sort** o **Duelo** (los dos a la vez sobre el mismo arreglo).
-- Cambiar la cantidad de elementos (3 a 1000, recomendado 100) y la velocidad (de 0,5 operaciones por segundo hasta ~150.000; recomendada ~190).
+- Cambiar la cantidad de elementos (2 a 500, recomendado 100): con el deslizador va de 2 en 2, o tocando el número se puede escribir a mano y la velocidad (de 0,5 operaciones por segundo hasta ~150.000; recomendada ~190).
 - Avanzar de a un paso y ver qué línea del código se está ejecutando.
 - Activar sonido: cada operación suena según la altura de la barra.
 - QR y link para abrirla desde el celu.
@@ -24,7 +24,7 @@ Atajos: `espacio` ordenar/pausa · `→` paso · `R` mezclar · `1` `2` `3` algo
 | Peor caso | O(n²) | no acotado |
 | Memoria | O(log n) | O(1) |
 
-Random Sort con 100 elementos no termina nunca (hay 100! ≈ 9,3 × 10¹⁵⁷ órdenes posibles). Para verlo ordenar, bajá a 5 o 6 elementos. En **Duelo**, Quick termina y Random se queda mezclando.
+Random Sort con 100 elementos no termina nunca (hay 100! ≈ 9,3 × 10¹⁵⁷ órdenes posibles). Para verlo ordenar, escribí 5 o 6 en Elementos. En **Duelo**, Quick termina y Random se queda mezclando.
 
 ## Archivos
 
