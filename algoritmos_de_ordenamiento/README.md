@@ -7,8 +7,7 @@ Demo visual para Programación I (ITR). Cada valor del arreglo es una barra; su 
 ## Qué se puede hacer
 
 - Elegir **Quick Sort**, **Random Sort** o **Duelo** (los dos a la vez sobre el mismo arreglo).
-- Cambiar la cantidad de elementos (10 a 1000) y la velocidad (de 0,5 operaciones por segundo hasta ~150.000).
-- Elegir los datos de entrada: aleatorio, casi ordenado, invertido o con muchos repetidos.
+- Cambiar la cantidad de elementos (3 a 1000, recomendado 100) y la velocidad (de 0,5 operaciones por segundo hasta ~150.000; recomendada ~190).
 - Avanzar de a un paso y ver qué línea del código se está ejecutando.
 - Activar sonido: cada operación suena según la altura de la barra.
 - QR y link para abrirla desde el celu.
@@ -17,15 +16,15 @@ Atajos: `espacio` ordenar/pausa · `→` paso · `R` mezclar · `1` `2` `3` algo
 
 ## Los dos algoritmos
 
-Son el mismo algoritmo (divide y vencerás, partición de Lomuto). Lo único que cambia es **cómo se elige el pivote**:
-
-| | Quick Sort | Random Sort |
+| | Quick Sort | Random Sort (Bogosort) |
 |---|---|---|
-| Pivote | siempre el último elemento | un elemento al azar del subarreglo |
-| Promedio | O(n log n) | O(n log n) |
-| Peor caso | O(n²) con datos ya ordenados o invertidos | O(n²), pero no depende de los datos: es casi imposible |
+| Idea | elegir un pivote (el último), separar menores y mayores, repetir en cada parte | ¿está ordenado? si no, mezclar todo al azar y volver a probar |
+| Mejor caso | O(n log n) | O(n) |
+| Promedio | O(n log n) | O(n · n!) |
+| Peor caso | O(n²) | no acotado |
+| Memoria | O(log n) | O(1) |
 
-Para ver la diferencia: **Duelo** + **Invertido** + 1000 elementos.
+Random Sort con 100 elementos no termina nunca (hay 100! ≈ 9,3 × 10¹⁵⁷ órdenes posibles). Para verlo ordenar, bajá a 5 o 6 elementos. En **Duelo**, Quick termina y Random se queda mezclando.
 
 ## Archivos
 

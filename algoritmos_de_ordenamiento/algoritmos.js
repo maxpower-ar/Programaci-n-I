@@ -18,34 +18,13 @@ function intercambiar(arr, i, j) {
     arr[j] = aux;
 }
 // ------------------------------------------------------------
-//  Partición de Lomuto (la usan los dos algoritmos)
-//  - El pivote es el ÚLTIMO elemento del subarreglo.
-//  - Recorre con j y va juntando a la izquierda los menores.
-//  - Al final coloca el pivote en su lugar definitivo.
-//  `desfase` corre los números de línea, porque en pantalla la
-//  función particion() aparece más abajo en Random Sort.
-// ------------------------------------------------------------
-function* particionLomuto(arr, lo, hi, desfase) {
-    const pivote = arr[hi];
-    yield { tipo: "pivote", i: hi, linea: 10 + desfase };
-    let i = lo - 1;
-    for (let j = lo; j < hi; j++) {
-        yield { tipo: "comparar", i: j, j: hi, linea: 13 + desfase };
-        if (arr[j] < pivote) {
-            i++;
-            intercambiar(arr, i, j);
-            yield { tipo: "swap", i, j, linea: 15 + desfase };
-        }
-    }
-    intercambiar(arr, i + 1, hi);
-    yield { tipo: "swap", i: i + 1, j: hi, linea: 18 + desfase };
-    return i + 1;
-}
-// ------------------------------------------------------------
-//  QUICK SORT (clásico)
-//  Pivote: siempre el último. Peor caso O(n²) si el arreglo ya
-//  viene ordenado o invertido: el pivote siempre es el máximo o
-//  el mínimo y cada partición sólo saca un elemento.
+//  QUICK SORT
+//  1. Elegir un pivote: el ÚLTIMO elemento del subarreglo.
+//  2. Separar (partición de Lomuto): los menores que el pivote
+//     van a la izquierda; al final el pivote queda en su lugar.
+//  3. Repetir lo mismo con la parte izquierda y la derecha.
+//  Peor caso O(n²): cuando el pivote siempre es el máximo o el
+//  mínimo (por ejemplo, si el arreglo ya viene ordenado).
 //
 //  (En pantalla se muestra la versión recursiva. Acá la recursión
 //  se simula con una pila para que el generador no se vuelva lento
@@ -61,40 +40,58 @@ function* quickSort(arr) {
             continue;
         }
         yield { tipo: "rango", lo, hi, linea: 4 };
-        const p = yield* particionLomuto(arr, lo, hi, 0);
+        const p = yield* particion(arr, lo, hi);
         yield { tipo: "ordenado", desde: p, hasta: p, linea: 19 };
         pila.push([p + 1, hi]); // se apila primero la derecha...
         pila.push([lo, p - 1]); // ...para resolver antes la izquierda
     }
 }
+function* particion(arr, lo, hi) {
+    const pivote = arr[hi];
+    yield { tipo: "pivote", i: hi, linea: 10 };
+    let i = lo - 1;
+    for (let j = lo; j < hi; j++) {
+        yield { tipo: "comparar", i: j, j: hi, linea: 13 };
+        if (arr[j] < pivote) {
+            i++;
+            intercambiar(arr, i, j);
+            yield { tipo: "swap", i, j, linea: 15 };
+        }
+    }
+    intercambiar(arr, i + 1, hi);
+    yield { tipo: "swap", i: i + 1, j: hi, linea: 18 };
+    return i + 1;
+}
 // ------------------------------------------------------------
-//  RANDOM SORT (Quick Sort aleatorizado)
-//  Exactamente igual a Quick Sort, con una sola diferencia: el
-//  pivote se elige AL AZAR dentro del subarreglo (y se lo manda al
-//  final para usar la misma partición). Así ningún orden de
-//  entrada lo hace caer siempre en el peor caso: en promedio
-//  tarda O(n log n) sin importar cómo vengan los datos.
+//  RANDOM SORT (ordenamiento aleatorio, o Bogosort)
+//  1. Se comprueba si la lista ya está ordenada.
+//  2. Si no, se mezclan TODOS los elementos al azar.
+//  3. Se vuelve a comprobar, y así hasta que quede ordenada.
+//  Hay n! órdenes posibles y sólo uno es el correcto: con 10
+//  elementos ya son 3.628.800. Con 100 no termina nunca.
 // ------------------------------------------------------------
 function* randomSort(arr) {
-    const pila = [[0, arr.length - 1]];
-    while (pila.length > 0) {
-        const [lo, hi] = pila.pop();
-        if (lo >= hi) {
-            if (lo === hi)
-                yield { tipo: "ordenado", desde: lo, hasta: lo, linea: 2 };
-            continue;
+    while (true) {
+        // ¿está ordenado?
+        let ordenado = true;
+        for (let i = 0; i < arr.length - 1; i++) {
+            yield { tipo: "comparar", i, j: i + 1, linea: 9 };
+            if (arr[i] > arr[i + 1]) {
+                ordenado = false;
+                break;
+            }
         }
-        yield { tipo: "rango", lo, hi, linea: 4 };
-        const k = lo + Math.floor(Math.random() * (hi - lo + 1));
-        yield { tipo: "pivote", i: k, linea: 4 };
-        if (k !== hi) {
-            intercambiar(arr, k, hi);
-            yield { tipo: "swap", i: k, j: hi, linea: 5 };
+        if (ordenado) {
+            yield { tipo: "ordenado", desde: 0, hasta: arr.length - 1, linea: 11 };
+            return;
         }
-        const p = yield* particionLomuto(arr, lo, hi, 2);
-        yield { tipo: "ordenado", desde: p, hasta: p, linea: 21 };
-        pila.push([p + 1, hi]);
-        pila.push([lo, p - 1]);
+        // no: mezclar todo (Fisher-Yates)
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            intercambiar(arr, i, j);
+            yield { tipo: "swap", i, j, linea: 18 };
+        }
+        yield { tipo: "mezcla", linea: 3 };
     }
 }
 // ------------------------------------------------------------
@@ -122,27 +119,25 @@ function particion(arr: number[], lo: number, hi: number): number {
   intercambiar(arr, i + 1, hi);
   return i + 1;
 }`,
-    random: `function randomSort(arr: number[], lo: number, hi: number): void {
-  if (lo >= hi) return;
-  // pivote al azar, y se lo manda al final
-  const k: number = lo + Math.floor(Math.random() * (hi - lo + 1));
-  intercambiar(arr, k, hi);
-  const p: number = particion(arr, lo, hi);
-  randomSort(arr, lo, p - 1);  // izquierda
-  randomSort(arr, p + 1, hi);  // derecha
+    random: `function randomSort(arr: number[]): void {
+  while (!estaOrdenado(arr)) {
+    mezclar(arr);  // desordenar todo al azar
+  }
 }
 
-function particion(arr: number[], lo: number, hi: number): number {
-  const pivote: number = arr[hi];
-  let i: number = lo - 1;
-  for (let j: number = lo; j < hi; j++) {
-    if (arr[j] < pivote) {
-      i++;
-      intercambiar(arr, i, j);
-    }
+function estaOrdenado(arr: number[]): boolean {
+  for (let i: number = 0; i < arr.length - 1; i++) {
+    if (arr[i] > arr[i + 1]) return false;
   }
-  intercambiar(arr, i + 1, hi);
-  return i + 1;
+  return true;
+}
+
+function mezclar(arr: number[]): void {
+  // Fisher-Yates: todos los órdenes son igual de probables
+  for (let i: number = arr.length - 1; i > 0; i--) {
+    const j: number = Math.floor(Math.random() * (i + 1));
+    intercambiar(arr, i, j);
+  }
 }`,
 };
 const ALGORITMOS = {
@@ -150,12 +145,12 @@ const ALGORITMOS = {
         nombre: "Quick",
         generador: (arr) => quickSort(arr),
         resumen: "Elige como pivote el último elemento, manda los menores a la izquierda y lo deja en su lugar definitivo. Después repite lo mismo, recursivamente, a cada lado.",
-        datos: [["Promedio", "O(n log n)"], ["Peor caso", "O(n²)"], ["Memoria", "O(log n)"], ["Estable", "No"]],
+        datos: [["Mejor caso", "O(n log n)"], ["Promedio", "O(n log n)"], ["Peor caso", "O(n²)"], ["Memoria", "O(log n)"]],
     },
     random: {
         nombre: "Random",
         generador: (arr) => randomSort(arr),
-        resumen: "Igual que Quick Sort, pero el pivote se elige al azar. Así ningún orden de entrada lo hace caer siempre en el peor caso: ni siquiera un arreglo ya ordenado o invertido.",
-        datos: [["Promedio", "O(n log n)"], ["Peor caso", "O(n²) · improbable"], ["Memoria", "O(log n)"], ["Estable", "No"]],
+        resumen: "Comprueba si la lista está ordenada. Si no lo está, mezcla todos los elementos al azar y vuelve a comprobar. Así hasta que, por pura suerte, quede ordenada.",
+        datos: [["Mejor caso", "O(n)"], ["Promedio", "O(n · n!)"], ["Peor caso", "No acotado (∞)"], ["Memoria", "O(1)"]],
     },
 };

@@ -9,7 +9,10 @@ declare const QRCode: any;
 const URL_PUBLICA: string = "https://maxpower-ar.github.io/Programaci-n-I/algoritmos_de_ordenamiento/";
 
 type ModoAlgoritmo = ClaveAlgoritmo | "duelo";
-type Distribucion = "aleatorio" | "casi" | "invertido" | "pocos";
+
+// Valores recomendados para la presentación
+const N_RECOMENDADO = 100;
+const VELOCIDAD_RECOMENDADA = 53; // ~190 operaciones por segundo
 type EstadoCorredor = "listo" | "corriendo" | "pausado" | "terminado";
 type Color = "barra" | "cmp" | "swap" | "pivote" | "listo" | "rango";
 
@@ -22,11 +25,10 @@ function $$<T extends Element = HTMLElement>(sel: string, raiz: ParentNode = doc
 
 const estado = {
   alg: "quick" as ModoAlgoritmo,
-  dist: "aleatorio" as Distribucion,
-  n: 150,
+  n: N_RECOMENDADO,
   base: [] as number[],          // arreglo original (desordenado)
   corriendo: false,
-  velocidad: 58,                 // 0..100 del slider
+  velocidad: VELOCIDAD_RECOMENDADA, // 0..100 del slider
   sonido: false,
   pestana: "quick" as ClaveAlgoritmo, // código visible en modo duelo
 };
@@ -51,29 +53,21 @@ function mezclar<T>(arr: T[]): T[] {
   return arr;
 }
 
-function generarDatos(n: number, dist: Distribucion): number[] {
-  const ordenado: number[] = Array.from({ length: n }, (_, i) => i + 1);
-  switch (dist) {
-    case "invertido":
-      return ordenado.reverse();
-    case "casi": {
-      // ordenado, con algunos vecinos desacomodados
-      const cambios = Math.max(2, Math.round(n * 0.06));
-      for (let c = 0; c < cambios; c++) {
-        const i = Math.floor(Math.random() * n);
-        const j = Math.min(n - 1, i + 1 + Math.floor(Math.random() * 6));
-        [ordenado[i], ordenado[j]] = [ordenado[j], ordenado[i]];
-      }
-      return ordenado;
-    }
-    case "pocos": {
-      // sólo 6 alturas distintas, muchísimos repetidos
-      const niveles = 6;
-      return mezclar(ordenado.map(() => Math.ceil((Math.ceil(Math.random() * niveles) / niveles) * n)));
-    }
-    default:
-      return mezclar(ordenado);
-  }
+// Los valores 1..n en orden aleatorio
+function generarDatos(n: number): number[] {
+  const arr: number[] = Array.from({ length: n }, (_, i) => i + 1);
+  do mezclar(arr); while (n > 1 && arr.every((v, i) => v === i + 1));
+  return arr;
+}
+
+// n! escrito como "9,3 × 10^157" (con logaritmos, porque no entra en un number)
+function factorialAproximado(n: number): string {
+  let log10 = 0;
+  for (let k = 2; k <= n; k++) log10 += Math.log10(k);
+  if (log10 < 9) return fmt.format(Math.round(Math.pow(10, log10)));
+  const exp = Math.floor(log10);
+  const mantisa = Math.pow(10, log10 - exp).toFixed(1).replace(".", ",");
+  return `${mantisa} × 10<sup>${exp}</sup>`;
 }
 
 // ------------------------------------------------------------
@@ -137,7 +131,7 @@ class Corredor {
   figura: HTMLElement;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
-  hud: { nombre: HTMLElement; cmp: HTMLElement; swp: HTMLElement; estado: HTMLElement; reglaFin: HTMLElement };
+  hud: { nombre: HTMLElement; cmp: HTMLElement; swp: HTMLElement; mezclas: HTMLElement; estado: HTMLElement; reglaFin: HTMLElement };
   ancho = 0;
   alto = 0;
 
@@ -148,6 +142,7 @@ class Corredor {
   gen: Pasos | null = null;
   comparaciones = 0;
   intercambios = 0;
+  mezclas = 0;
   linea = 0;
   rango: [number, number] | null = null;
   pivote = -1;
@@ -166,6 +161,7 @@ class Corredor {
       nombre: $(".hud-nombre", figura),
       cmp: $(".hud-cmp", figura),
       swp: $(".hud-swp", figura),
+      mezclas: $(".hud-mezclas", figura),
       estado: $(".hud-estado", figura),
       reglaFin: $(".regla-fin", figura),
     };
@@ -191,6 +187,7 @@ class Corredor {
     this.gen = null;
     this.comparaciones = 0;
     this.intercambios = 0;
+    this.mezclas = 0;
     this.linea = 0;
     this.rango = null;
     this.pivote = -1;
@@ -201,6 +198,7 @@ class Corredor {
     this.ganador = false;
     this.figura.classList.remove("ganador");
     this.hud.nombre.textContent = ALGORITMOS[alg].nombre + " Sort";
+    this.hud.mezclas.parentElement!.hidden = alg !== "random";
     this.hud.reglaFin.textContent = String(this.arr.length - 1);
     this.ponerEstado("listo");
     this.actualizarHud();
@@ -254,6 +252,9 @@ class Corredor {
         case "pivote":
           this.pivote = ev.i;
           break;
+        case "mezcla":
+          this.mezclas++;
+          break;
         case "ordenado":
           this.listo.fill(1, ev.desde, ev.hasta + 1);
           break;
@@ -273,6 +274,7 @@ class Corredor {
   actualizarHud(): void {
     this.hud.cmp.textContent = fmt.format(this.comparaciones);
     this.hud.swp.textContent = fmt.format(this.intercambios);
+    this.hud.mezclas.textContent = fmt.format(this.mezclas);
   }
 
   dibujar(): void {
@@ -402,7 +404,7 @@ function animarPalabra(texto: string): void {
 // ------------------------------------------------------------
 const PALABRAS_CLAVE = /\b(function|const|let|if|for|while|return|continue|break)\b/g;
 const TIPOS = /\b(number|void|boolean|string)\b/g;
-const FUNCIONES = /\b(quickSort|randomSort|particion|intercambiar)\b/g;
+const FUNCIONES = /\b(quickSort|randomSort|particion|intercambiar|estaOrdenado|mezclar)\b/g;
 
 function escapar(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -446,8 +448,8 @@ function marcarLinea(n: number): void {
 // ------------------------------------------------------------
 const BAJADAS: Record<ModoAlgoritmo, string> = {
   quick: "<b>Quick Sort</b> · divide y vencerás · pivote = último elemento · partición de Lomuto",
-  random: "<b>Random Sort</b> · Quick Sort aleatorizado · pivote = un elemento al azar · partición de Lomuto",
-  duelo: "<b>Duelo</b> · los dos algoritmos, el mismo arreglo, la misma velocidad. ¿Quién termina primero?",
+  random: "<b>Random Sort</b> (Bogosort) · ¿está ordenado? si no, mezclar todo al azar y volver a probar",
+  duelo: "<b>Duelo</b> · los dos algoritmos, el mismo arreglo, la misma velocidad. ¿Quién termina primero? (spoiler: Quick)",
 };
 
 function actualizarTextos(): void {
@@ -455,17 +457,36 @@ function actualizarTextos(): void {
   const info = ALGORITMOS[clave];
   $("#bajada").innerHTML = BAJADAS[estado.alg];
   $("#resumen").textContent = info.resumen;
+  actualizarNota();
   $("#fichas").innerHTML = info.datos.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
   mostrarCodigo(clave);
   const nombre = estado.alg === "duelo" ? "Quick vs Random" : info.nombre;
   document.title = `${nombre} Sort · Algoritmos de Ordenación — Programación I`;
 }
 
+// Para Random Sort: cuántos órdenes posibles hay con n elementos
+function actualizarNota(): void {
+  const nota = $("#nota");
+  const clave: ClaveAlgoritmo = estado.alg === "duelo" ? estado.pestana : estado.alg;
+  nota.hidden = clave !== "random";
+  if (nota.hidden) return;
+  const n = estado.n;
+  const final = n <= 7 ? "Con tan pocos debería terminar enseguida."
+    : n <= 9 ? "Puede tardar bastante: paciencia (o subí la velocidad)."
+    : "No va a terminar nunca. Para verlo ordenar, bajá a 5 o 6 elementos.";
+  nota.innerHTML = `Con <b>${n}</b> elementos hay <b>${factorialAproximado(n)}</b> órdenes posibles y sólo uno es el correcto. ${final}`;
+}
+
+// Marca "recomendado" cuando el slider está en el valor sugerido
+function marcarRecomendado(id: string, recomendado: boolean): void {
+  $(id).classList.toggle("recomendado", recomendado);
+}
+
 // ------------------------------------------------------------
 //  Acciones
 // ------------------------------------------------------------
 function reiniciar(nuevosDatos: boolean): void {
-  if (nuevosDatos || estado.base.length !== estado.n) estado.base = generarDatos(estado.n, estado.dist);
+  if (nuevosDatos || estado.base.length !== estado.n) estado.base = generarDatos(estado.n);
   pausar();
   if (estado.alg === "duelo") {
     corredores[0].preparar("quick", estado.base);
@@ -524,12 +545,6 @@ function elegirAlgoritmo(alg: ModoAlgoritmo): void {
   reiniciar(false);
 }
 
-function elegirDistribucion(dist: Distribucion): void {
-  estado.dist = dist;
-  $$(".chips button").forEach((b) => b.setAttribute("aria-checked", String(b.dataset.dist === dist)));
-  reiniciar(true);
-}
-
 function pintarSlider(input: HTMLInputElement): void {
   const p = ((+input.value - +input.min) / (+input.max - +input.min)) * 100;
   input.style.setProperty("--p", p + "%");
@@ -541,6 +556,7 @@ function cambiarVelocidad(v: number): void {
   input.value = String(estado.velocidad);
   pintarSlider(input);
   $("#outV").textContent = formatearVelocidad(opsPorSegundo(estado.velocidad));
+  marcarRecomendado("#outV", estado.velocidad === VELOCIDAD_RECOMENDADA);
 }
 
 // ------------------------------------------------------------
@@ -667,7 +683,6 @@ function alternarSonido(): void {
 // ------------------------------------------------------------
 function conectar(): void {
   $$(".segmentado button").forEach((b) => b.addEventListener("click", () => elegirAlgoritmo(b.dataset.alg as ModoAlgoritmo)));
-  $$(".chips button").forEach((b) => b.addEventListener("click", () => elegirDistribucion(b.dataset.dist as Distribucion)));
   $$("#pestanas button").forEach((b) =>
     b.addEventListener("click", () => {
       estado.pestana = b.dataset.cod as ClaveAlgoritmo;
@@ -680,6 +695,8 @@ function conectar(): void {
   rngN.addEventListener("input", () => {
     estado.n = +rngN.value;
     $("#outN").textContent = String(estado.n);
+    marcarRecomendado("#outN", estado.n === N_RECOMENDADO);
+    actualizarNota();
     pintarSlider(rngN);
     reiniciar(true);
   });
@@ -739,7 +756,11 @@ function conectar(): void {
   aplicarTema(tema);
 
   conectar();
-  pintarSlider($<HTMLInputElement>("#rngN"));
+  const rngN = $<HTMLInputElement>("#rngN");
+  rngN.value = String(estado.n);
+  $("#outN").textContent = String(estado.n);
+  marcarRecomendado("#outN", true);
+  pintarSlider(rngN);
   cambiarVelocidad(estado.velocidad);
   actualizarTextos();
   animarPalabra("Quick");

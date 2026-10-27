@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Quick Sort · Algoritmos de Ordenación — Programación I</title>
-  <meta name="description" content="Visualizador de Quick Sort y Random Sort. Programación I · ITR.">
+  <meta name="description" content="Visualizador de Quick Sort y Random Sort (Bogosort). Programación I · ITR.">
   <meta name="theme-color" content="#0f0e0c">
   <link rel="icon" href="https://itr.edu.ar/images/LogoITR2022-01.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,6 +47,7 @@
             <span class="hud-nombre"></span>
             <span><b class="hud-cmp">0</b> comparaciones</span>
             <span><b class="hud-swp">0</b> intercambios</span>
+            <span hidden><b class="hud-mezclas">0</b> mezclas</span>
             <span class="hud-estado">listo</span>
           </div>
           <canvas></canvas>
@@ -57,6 +58,7 @@
             <span class="hud-nombre"></span>
             <span><b class="hud-cmp">0</b> comparaciones</span>
             <span><b class="hud-swp">0</b> intercambios</span>
+            <span hidden><b class="hud-mezclas">0</b> mezclas</span>
             <span class="hud-estado">listo</span>
           </div>
           <canvas></canvas>
@@ -74,24 +76,14 @@
           </div>
         </div>
 
-        <div class="grupo grupo-datos">
-          <span class="etiqueta">Datos de entrada</span>
-          <div class="chips" role="radiogroup" aria-label="Datos de entrada">
-            <button role="radio" data-dist="aleatorio" aria-checked="true">Aleatorio</button>
-            <button role="radio" data-dist="casi" aria-checked="false">Casi ordenado</button>
-            <button role="radio" data-dist="invertido" aria-checked="false">Invertido</button>
-            <button role="radio" data-dist="pocos" aria-checked="false">Muchos repetidos</button>
-          </div>
-        </div>
-
         <div class="grupo grupo-slider">
-          <label class="etiqueta" for="rngN">Elementos <output id="outN">150</output></label>
-          <input type="range" id="rngN" min="10" max="1000" step="1" value="150">
+          <label class="etiqueta" for="rngN">Elementos <output id="outN">100</output></label>
+          <input type="range" id="rngN" min="3" max="1000" step="1" value="100">
         </div>
 
         <div class="grupo grupo-slider">
           <label class="etiqueta" for="rngV">Velocidad <output id="outV"></output></label>
-          <input type="range" id="rngV" min="0" max="100" step="1" value="58">
+          <input type="range" id="rngV" min="0" max="100" step="1" value="53">
           <div class="extremos"><span>tortuga</span><span>hermoso</span></div>
         </div>
 
@@ -108,6 +100,7 @@
       <section class="tarjeta">
         <h2 class="tarjeta-titulo">Cómo funciona</h2>
         <p id="resumen" class="resumen"></p>
+        <p id="nota" class="nota" hidden></p>
         <dl id="fichas" class="fichas"></dl>
         <ul class="leyenda">
           <li><i style="--c:var(--c-pivote)"></i>pivote</li>

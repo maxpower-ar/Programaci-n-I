@@ -295,12 +295,13 @@ kbd {
 .controles {
   margin-top: 16px;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 16px 28px;
   align-items: end;
 }
 
 .grupo { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.grupo-alg { grid-column: 1 / -1; }
 .grupo-slider { grid-column: span 1; }
 
 .etiqueta {
@@ -312,6 +313,11 @@ kbd {
   display: flex;
   justify-content: space-between;
   gap: 10px;
+}
+.etiqueta output.recomendado::after {
+  content: " · recomendado";
+  color: var(--c-listo);
+  font-weight: 400;
 }
 .etiqueta output {
   color: var(--tinta);
@@ -339,21 +345,6 @@ kbd {
 .segmentado button:last-child { border-right: 0; }
 .segmentado button[aria-checked="true"] { background: var(--tinta); color: var(--fondo); }
 .segmentado button:not([aria-checked="true"]):hover { background: var(--fondo-3); }
-
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chips button {
-  padding: 8px 12px;
-  background: transparent;
-  border: 1px dashed var(--linea);
-  font-size: 14px;
-  transition: border-color .15s, background .15s;
-}
-.chips button:hover { border-color: var(--apagado); }
-.chips button[aria-checked="true"] {
-  border-style: solid;
-  border-color: var(--tinta);
-  background: var(--fondo-3);
-}
 
 /* Sliders */
 input[type="range"] {
@@ -454,6 +445,16 @@ input[type="range"]:focus-visible { outline: 1px dashed var(--apagado); outline-
 }
 
 .resumen { margin: 0 0 14px; font-size: 15px; }
+
+.nota {
+  margin: -4px 0 14px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--c-swap);
+  background: var(--fondo-2);
+  font-size: 14px;
+}
+.nota b { font-family: "JetBrains Mono", monospace; font-weight: 600; }
+.nota sup { font-size: .7em; }
 
 .fichas {
   display: grid;
@@ -602,7 +603,6 @@ input[type="range"]:focus-visible { outline: 1px dashed var(--apagado); outline-
   .controles { grid-template-columns: 1fr; gap: 16px; }
   .segmentado button { padding: 11px 6px; font-size: 15px; }
   .segmentado kbd, .botonera kbd { display: none; }
-  .chips button { flex: 1 1 calc(50% - 6px); }
   .botonera { grid-template-columns: 1fr 1fr 1fr; }
   .btn-play { grid-column: 1 / -1; padding: 16px; font-size: 18px; }
 
