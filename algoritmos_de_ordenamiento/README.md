@@ -1,4 +1,4 @@
-# Algoritmos de Ordenación — Quick Sort y Rapid Sort
+# Algoritmos de Ordenación — Quick Sort y Random Sort
 
 Demo visual para Programación I (ITR). Cada valor del arreglo es una barra; su altura es el valor.
 
@@ -6,7 +6,7 @@ Demo visual para Programación I (ITR). Cada valor del arreglo es una barra; su 
 
 ## Qué se puede hacer
 
-- Elegir **Quick Sort**, **Rapid Sort** o **Duelo** (los dos a la vez sobre el mismo arreglo).
+- Elegir **Quick Sort**, **Random Sort** o **Duelo** (los dos a la vez sobre el mismo arreglo).
 - Cambiar la cantidad de elementos (10 a 1000) y la velocidad (de 0,5 operaciones por segundo hasta ~150.000).
 - Elegir los datos de entrada: aleatorio, casi ordenado, invertido o con muchos repetidos.
 - Avanzar de a un paso y ver qué línea del código se está ejecutando.
@@ -17,20 +17,28 @@ Atajos: `espacio` ordenar/pausa · `→` paso · `R` mezclar · `1` `2` `3` algo
 
 ## Los dos algoritmos
 
-| | Quick Sort | Rapid Sort |
+Son el mismo algoritmo (divide y vencerás, partición de Lomuto). Lo único que cambia es **cómo se elige el pivote**:
+
+| | Quick Sort | Random Sort |
 |---|---|---|
-| Pivote | el último elemento | mediana de tres (primero, medio, último) |
-| Partición | Lomuto (un puntero) | Hoare (dos punteros que se cruzan) |
-| Subarreglos chicos | sigue partiendo | ordenamiento por inserción (≤ 12) |
-| Peor caso | O(n²) con datos ya ordenados o invertidos | O(n²), pero en la práctica casi imposible |
+| Pivote | siempre el último elemento | un elemento al azar del subarreglo |
+| Promedio | O(n log n) | O(n log n) |
+| Peor caso | O(n²) con datos ya ordenados o invertidos | O(n²), pero no depende de los datos: es casi imposible |
 
 Para ver la diferencia: **Duelo** + **Invertido** + 1000 elementos.
 
 ## Archivos
 
-- `algoritmos.js`: los dos algoritmos, escritos como generadores (`function*`) que avisan cada comparación e intercambio.
-- `visualizador.js`: dibuja las barras en un `<canvas>` y maneja los controles.
+- `algoritmos.ts`: los dos algoritmos, escritos como generadores (`function*`) que avisan cada comparación e intercambio.
+- `visualizador.ts`: dibuja las barras en un `<canvas>` y maneja los controles.
+- `algoritmos.js`, `visualizador.js`: lo que genera `tsc` (es lo que carga la página).
 - `estilos.css`, `index.html`: la página.
+
+Si cambiás algún `.ts`, recompilá desde esta carpeta con:
+
+```
+tsc
+```
 
 Para abrirla, alcanza con abrir `index.html` en el navegador.
 

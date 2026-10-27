@@ -1,0 +1,11 @@
+{
+  // Compila algoritmos.ts y visualizador.ts a .js (al lado de cada .ts).
+  // Desde esta carpeta: tsc
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "newLine": "lf"
+  },
+  "files": ["algoritmos.ts", "visualizador.ts"]
+}

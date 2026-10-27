@@ -156,7 +156,7 @@ kbd {
   white-space: nowrap;
 }
 
-.titulo-sort.es-duelo { font-size: clamp(54px, 9.6vw, 150px); }
+.titulo-sort.es-duelo { font-size: clamp(48px, 8.6vw, 136px); }
 
 .palabra { display: inline-flex; color: var(--tinta); }
 .palabra .letra {
@@ -534,6 +534,7 @@ input[type="range"]:focus-visible { outline: 1px dashed var(--apagado); outline-
 .codigo .kw { color: var(--c-pivote); }
 .codigo .cm { color: var(--apagado); font-style: italic; }
 .codigo .fn { color: var(--c-cmp); }
+.codigo .ty { color: var(--c-listo); }
 
 /* Compartir */
 .tarjeta-compartir { display: flex; gap: 16px; align-items: center; }
@@ -590,8 +591,8 @@ input[type="range"]:focus-visible { outline: 1px dashed var(--apagado); outline-
   .barra-sup { gap: 12px; }
   .logo { height: 26px; }
   .materia { padding-left: 12px; font-size: 11px; letter-spacing: .14em; }
-  .titulo-sort { font-size: clamp(64px, 23vw, 120px); }
-  .titulo-sort.es-duelo { font-size: clamp(40px, 13.5vw, 80px); }
+  .titulo-sort { font-size: clamp(56px, 19vw, 120px); }
+  .titulo-sort.es-duelo { font-size: clamp(36px, 11.6vw, 80px); }
 
   .tablero { padding-top: 16px; gap: 16px; }
   .escenario { height: 46vh; min-height: 260px; }
